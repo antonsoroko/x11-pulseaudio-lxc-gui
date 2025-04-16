@@ -33,7 +33,7 @@ pactl info
 paplay Downloads/test.wav
 ```
 
-# References
+## References
 
 This LXC profile is just a compilation of other people work:
 
