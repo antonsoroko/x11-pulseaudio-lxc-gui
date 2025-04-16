@@ -1,0 +1,41 @@
+name: x11_pulseaudio_proxy
+description: X11 plus PulseAudio Proxy LXC profile for running GUI applications
+config:
+  environment.DISPLAY: :0
+  environment.PULSE_SERVER: unix:/home/ubuntu/pulse-native
+  raw.idmap: |-
+    uid $(id -g $USER) 1000
+    gid $(id -u $USER) 1000
+  user.user-data: |
+    #cloud-config
+    packages:
+      - x11-apps
+      - mesa-utils
+      - alsa-utils
+      - pulseaudio
+    runcmd:
+      - 'sed -i "s/; enable-shm = yes/enable-shm = no/g" /etc/pulse/client.conf'
+      - 'sed -i "s/; default-server =/default-server = unix:\/home\/ubuntu\/pulse-native/g" /etc/pulse/client.conf'
+devices:
+  X0:
+    bind: container
+    connect: unix:@/tmp/.X11-unix/X0
+    listen: unix:@/tmp/.X11-unix/X0
+    security.gid: "$(id -g $USER)"
+    security.uid: "$(id -u $USER)"
+    type: proxy
+  PASocket1:
+    bind: container
+    connect: unix:/run/user/$(id -u $USER)/pulse/native
+    listen: unix:/home/ubuntu/pulse-native
+    security.gid: "$(id -g $USER)"
+    security.uid: "$(id -u $USER)"
+    uid: "1000"
+    gid: "1000"
+    mode: "0777"
+    type: proxy
+  #PACookie:
+    #source: "/home/$USER/.config/pulse/cookie"
+    #path: "/home/ubuntu/.config/pulse/cookie"
+    #readonly: true
+    #type: disk
